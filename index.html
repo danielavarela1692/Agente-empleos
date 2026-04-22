@@ -637,7 +637,7 @@
 </div>
 
 <script>
-const TELEGRAM_TOKEN = '8779193158:AAG12rbJ4HKR16buzPXlbegwz9bCPRurxoU';
+const TELEGRAM_TOKEN = '8779193158:AAEGDhrFl2mnChbVYb9ep8xlLK90Y3E4n2k';
 const CHAT_ID = '8520214777';
 
 const PERFIL = `
@@ -749,93 +749,4 @@ Las ofertas deben ser relevantes para el perfil. Responde SOLO con JSON válido,
   });
 
   const data = await response.json();
-  const text = data.content.map(i => i.text || "").join("");
-  const clean = text.replace(/```json|```/g, "").trim();
-  return JSON.parse(clean);
-}
-
-async function startSearch() {
-  const btn = document.getElementById('btnSearch');
-  const spinner = document.getElementById('spinner');
-  const btnText = document.getElementById('btnText');
-
-  btn.disabled = true;
-  spinner.classList.add('visible');
-  btnText.textContent = 'Buscando empleos...';
-
-  const logPanel = document.getElementById('logPanel');
-  logPanel.classList.add('visible');
-  logCount = 0;
-
-  setStatus('running', 'Ejecutando...');
-
-  addLog('🤖 Agente de empleos iniciado', 'accent');
-  addLog(`📋 Perfil: Product Manager · CS Manager · Analista Funcional`, '');
-  addLog(`🗺️ Zona: Buenos Aires, Argentina`, '');
-
-  // Send start notification
-  addLog('📡 Conectando con Telegram...', 'dim');
-  const initOk = await sendTelegram(`🤖 <b>Agente de Empleos iniciado</b>\n\n👩‍💼 Buscando ofertas para:\n<b>Daniela Varela — Product Manager</b>\n\n🔍 Buscando en Bumeran, LinkedIn, Computrabajo, ZonaJobs, Indeed...\n\n⏳ Te envío los resultados en unos segundos.`);
-  if (initOk) addLog('✓ Telegram conectado correctamente', 'success');
-  else addLog('⚠ No se pudo conectar a Telegram, verificá el token', 'error');
-
-  const allJobs = [];
-  let totalFound = 0;
-  let totalSent = 0;
-
-  for (let i = 0; i < QUERIES.length; i++) {
-    const q = QUERIES[i];
-    addLog(`🔍 [${i+1}/${QUERIES.length}] Buscando en ${q.plat}: "${q.q}"`, 'dim');
-
-    try {
-      await new Promise(r => setTimeout(r, 600));
-      const jobs = await searchAndParse(q);
-      addLog(`✓ ${jobs.length} ofertas encontradas en ${q.plat}`, 'success');
-      totalFound += jobs.length;
-
-      for (const job of jobs) {
-        allJobs.push(job);
-
-        // Send to Telegram
-        const msg = `💼 <b>${job.title}</b>\n🏢 ${job.company}\n📍 ${job.location} · ${job.platform}\n\n${job.description}\n\n🏷 ${job.tags.join(' · ')}\n💰 ${job.salary || 'A convenir'}\n\n🔗 ${job.url || 'Ver en la plataforma'}`;
-        const sent = await sendTelegram(msg);
-        if (sent) {
-          totalSent++;
-          addLog(`  → Enviado a Telegram: "${job.title}"`, 'accent');
-        }
-        await new Promise(r => setTimeout(r, 400));
-      }
-    } catch (e) {
-      addLog(`⚠ Error en ${q.plat}: ${e.message}`, 'warn');
-    }
-  }
-
-  // Final summary to Telegram
-  const summary = `✅ <b>Búsqueda completada</b>\n\n📊 Resultados:\n• Búsquedas realizadas: ${QUERIES.length}\n• Ofertas encontradas: ${totalFound}\n• Enviadas a Telegram: ${totalSent}\n\n🎯 Roles: PM · CS Manager · Analista Funcional · Coordinadora de Soporte\n📍 Zona: Buenos Aires, Argentina\n\n¡Mucho éxito, Dani! 🚀`;
-  await sendTelegram(summary);
-
-  // Render job cards
-  const jobsSection = document.getElementById('jobsSection');
-  jobsSection.style.display = 'block';
-  document.getElementById('jobsCount').textContent = allJobs.length;
-
-  allJobs.forEach((job, i) => renderJobCard(job, i));
-
-  // Stats
-  const statsBar = document.getElementById('statsBar');
-  statsBar.style.display = 'grid';
-  document.getElementById('statBuscados').textContent = QUERIES.length;
-  document.getElementById('statEncontrados').textContent = totalFound;
-  document.getElementById('statEnviados').textContent = totalSent;
-
-  addLog('', '');
-  addLog(`✅ Búsqueda finalizada · ${totalFound} empleos encontrados · ${totalSent} enviados a Telegram`, 'success');
-  setStatus('done', `Completado · ${totalFound} ofertas`);
-
-  btn.disabled = false;
-  spinner.classList.remove('visible');
-  btnText.textContent = '🔄 Buscar nuevamente';
-}
-</script>
-</body>
-</html>
+  const text = data.content.map(i => i.text || "").join(
