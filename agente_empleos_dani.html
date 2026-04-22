@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agente de Empleos · Daniela Varela</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --accent3: #6af7c4;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --danger: #f76a6a;
+    --success: #6af7a0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(124,106,247,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(106,247,196,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  header {
+    margin-bottom: 48px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(124,106,247,0.15);
+    border: 1px solid rgba(124,106,247,0.3);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 42px);
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* CV Summary Card */
+  .cv-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  .cv-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .cv-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text);
+    transition: border-color 0.2s;
+  }
+
+  .tag:hover { border-color: var(--accent); }
+  .tag.highlight { border-color: rgba(124,106,247,0.4); color: var(--accent); }
+
+  /* Search config */
+  .config-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s 0.2s ease both;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .platforms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .platform-toggle {
+    position: relative;
+  }
+
+  .platform-toggle input {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+
+  .platform-toggle label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .platform-toggle input:checked + label {
+    background: rgba(124,106,247,0.12);
+    border-color: rgba(124,106,247,0.5);
+    color: var(--accent);
+  }
+
+  .platform-toggle label .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .platform-toggle input:checked + label .dot {
+    background: var(--accent);
+  }
+
+  /* Roles */
+  .roles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .role-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  .role-item .priority {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 6px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .priority.alta { background: rgba(106,247,160,0.15); color: var(--success); }
+  .priority.media { background: rgba(247,162,106,0.15); color: var(--accent2); }
+
+  /* Action button */
+  .btn-search {
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s 0.3s ease both;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-search::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.4s;
+  }
+
+  .btn-search:hover::before { left: 100%; }
+  .btn-search:hover { background: #8f7ef8; transform: translateY(-1px); box-shadow: 0 8px 30px rgba(124,106,247,0.4); }
+  .btn-search:active { transform: translateY(0); }
+  .btn-search:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Log / Results */
+  .log-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.5s 0.4s ease both;
+    display: none;
+  }
+
+  .log-panel.visible { display: block; }
+
+  .log-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .log-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+
+  .status-dot.running { background: var(--accent2); animation: pulse 1s infinite; }
+  .status-dot.done { background: var(--success); }
+  .status-dot.error { background: var(--danger); }
+
+  .log-body {
+    padding: 16px 20px;
+    max-height: 420px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .log-line {
+    font-size: 11px;
+    line-height: 1.6;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    animation: fadeIn 0.3s ease both;
+  }
+
+  .log-time { color: var(--muted); flex-shrink: 0; font-size: 10px; margin-top: 1px; }
+  .log-msg { color: var(--text); }
+  .log-msg.success { color: var(--success); }
+  .log-msg.warn { color: var(--accent2); }
+  .log-msg.error { color: var(--danger); }
+  .log-msg.accent { color: var(--accent); }
+  .log-msg.dim { color: var(--muted); }
+
+  /* Job cards */
+  .jobs-section {
+    margin-top: 0;
+  }
+
+  .jobs-header {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .jobs-count {
+    background: rgba(106,247,160,0.15);
+    color: var(--success);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+  }
+
+  .job-cards {
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .job-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s;
+    animation: fadeIn 0.4s ease both;
+  }
+
+  .job-card:hover { border-color: rgba(124,106,247,0.4); }
+
+  .job-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .job-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .job-platform {
+    font-size: 9px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    background: rgba(124,106,247,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(124,106,247,0.2);
+  }
+
+  .job-company {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .job-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .job-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .job-tags-small {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .job-tag-s {
+    font-size: 9px;
+    padding: 2px 7px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--muted);
+  }
+
+  .job-link {
+    font-size: 10px;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border: 1px solid rgba(124,106,247,0.3);
+    border-radius: 6px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .job-link:hover {
+    background: rgba(124,106,247,0.15);
+  }
+
+  /* Telegram sent indicator */
+  .telegram-sent {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--success);
+    margin-top: 8px;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-top: 1px solid var(--border);
+    margin-top: 0;
+  }
+
+  .stat-item {
+    background: var(--surface);
+    padding: 14px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--accent);
+    display: block;
+  }
+
+  .stat-lbl {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  .spinner.visible { display: block; }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="badge">IA · Búsqueda activa</div>
+    <h1>Agente de Empleos<br><em>Daniela Varela</em></h1>
+    <p class="subtitle">Product Manager · Customer Success · Analista Funcional · Coordinadora de Soporte</p>
+  </header>
+
+  <!-- CV Summary -->
+  <div class="cv-card">
+    <div class="cv-card-header">📄 Perfil detectado del CV</div>
+    <div class="cv-tags">
+      <span class="tag highlight">Product Manager</span>
+      <span class="tag highlight">Coordinadora de Soporte</span>
+      <span class="tag highlight">ERP / SaaS</span>
+      <span class="tag">Agile · Scrum</span>
+      <span class="tag">Zoho · Asana</span>
+      <span class="tag">KPIs · OKRs</span>
+      <span class="tag">10+ años exp.</span>
+      <span class="tag">Buenos Aires</span>
+      <span class="tag">Cross-functional teams</span>
+      <span class="tag">IA generativa</span>
+    </div>
+  </div>
+
+  <!-- Platform config -->
+  <div class="config-section">
+    <div class="section-label">Plataformas a buscar</div>
+    <div class="platforms-grid">
+      <div class="platform-toggle"><input type="checkbox" id="p1" checked><label for="p1"><span class="dot"></span>Bumeran</label></div>
+      <div class="platform-toggle"><input type="checkbox" id="p2" checked><label for="p2"><span class="dot"></span>Computrabajo</label></div>
+      <div class="platform-toggle"><input type="checkbox" id="p3" checked><label for="p3"><span class="dot"></span>LinkedIn</label></div>
+      <div class="platform-toggle"><input type="checkbox" id="p4" checked><label for="p4"><span class="dot"></span>ZonaJobs</label></div>
+      <div class="platform-toggle"><input type="checkbox" id="p5" checked><label for="p5"><span class="dot"></span>Indeed</label></div>
+      <div class="platform-toggle"><input type="checkbox" id="p6"><label for="p6"><span class="dot"></span>GetOnBoard</label></div>
+    </div>
+
+    <div class="section-label">Roles a buscar</div>
+    <div class="roles-list">
+      <div class="role-item">🎯 Product Manager <span class="priority alta">Alta prioridad</span></div>
+      <div class="role-item">🎯 Customer Success Manager <span class="priority alta">Alta prioridad</span></div>
+      <div class="role-item">🎯 Coordinadora de Soporte / Operaciones <span class="priority media">Media</span></div>
+      <div class="role-item">🎯 Analista Funcional ERP <span class="priority media">Media</span></div>
+    </div>
+  </div>
+
+  <!-- Search button -->
+  <button class="btn-search" id="btnSearch" onclick="startSearch()">
+    <div class="spinner" id="spinner"></div>
+    <span id="btnText">🔍 Buscar Empleos y Enviar a Telegram</span>
+  </button>
+
+  <!-- Log panel -->
+  <div class="log-panel" id="logPanel">
+    <div class="log-header">
+      <span>Log de ejecución</span>
+      <div class="log-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">—</span>
+      </div>
+    </div>
+    <div class="log-body" id="logBody"></div>
+
+    <div class="jobs-section" id="jobsSection" style="display:none">
+      <div class="jobs-header">
+        <span>Empleos encontrados</span>
+        <span class="jobs-count" id="jobsCount">0</span>
+      </div>
+      <div class="job-cards" id="jobCards"></div>
+    </div>
+
+    <div class="stats-bar" id="statsBar" style="display:none">
+      <div class="stat-item"><span class="stat-num" id="statBuscados">0</span><span class="stat-lbl">Buscados</span></div>
+      <div class="stat-item"><span class="stat-num" id="statEncontrados">0</span><span class="stat-lbl">Encontrados</span></div>
+      <div class="stat-item"><span class="stat-num" id="statEnviados">0</span><span class="stat-lbl">Enviados</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TELEGRAM_TOKEN = '8779193158:AAG12rbJ4HKR16buzPXlbegwz9bCPRurxoU';
+const CHAT_ID = '8520214777';
+
+const PERFIL = `
+Daniela Varela — Product Manager & Coordinadora de Soporte
+- 10+ años de experiencia en ERP/sistemas de gestión
+- Fundó y lideró área de soporte desde cero (3-5 personas)
+- Roadmap, backlog, Agile/Scrum, KPIs, OKRs
+- Herramientas: Zoho, Asana, Postman, Visual FoxPro, SQL, CRM, ERP
+- IA generativa: ChatGPT, Claude, Gemini
+- Buenos Aires, Argentina
+- Roles objetivo: Product Manager, Customer Success Manager, Analista Funcional, Coordinadora de Soporte/Operaciones
+`;
+
+const QUERIES = [
+  { q: "Product Manager ERP Argentina Buenos Aires", plat: "LinkedIn" },
+  { q: "Product Manager SaaS Agile Buenos Aires", plat: "LinkedIn" },
+  { q: "Customer Success Manager software Argentina", plat: "Bumeran" },
+  { q: "Coordinadora de soporte tecnología Buenos Aires", plat: "Computrabajo" },
+  { q: "Analista Funcional ERP Buenos Aires", plat: "ZonaJobs" },
+  { q: "Product Manager startup tecnología Argentina 2025", plat: "Indeed" },
+];
+
+let logCount = 0;
+
+function getTime() {
+  return new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function addLog(msg, type = '') {
+  const body = document.getElementById('logBody');
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.style.animationDelay = `${logCount * 0.05}s`;
+  line.innerHTML = `<span class="log-time">${getTime()}</span><span class="log-msg ${type}">${msg}</span>`;
+  body.appendChild(line);
+  body.scrollTop = body.scrollHeight;
+  logCount++;
+}
+
+function setStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ' + state;
+  document.getElementById('statusText').textContent = text;
+}
+
+async function sendTelegram(text) {
+  const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'HTML', disable_web_page_preview: false })
+  });
+  return res.ok;
+}
+
+function renderJobCard(job, index) {
+  const container = document.getElementById('jobCards');
+  const card = document.createElement('div');
+  card.className = 'job-card';
+  card.style.animationDelay = `${index * 0.1}s`;
+  card.innerHTML = `
+    <div class="job-card-top">
+      <div class="job-title">${job.title}</div>
+      <span class="job-platform">${job.platform}</span>
+    </div>
+    <div class="job-company">🏢 ${job.company} · ${job.location}</div>
+    <div class="job-desc">${job.description}</div>
+    <div class="job-footer">
+      <div class="job-tags-small">
+        ${job.tags.map(t => `<span class="job-tag-s">${t}</span>`).join('')}
+      </div>
+      ${job.url ? `<a class="job-link" href="${job.url}" target="_blank">Ver oferta →</a>` : ''}
+    </div>
+    <div class="telegram-sent">✓ Enviado a Telegram</div>
+  `;
+  container.appendChild(card);
+}
+
+async function searchAndParse(query) {
+  const prompt = `Eres un agente de búsqueda de empleo especializado en el mercado laboral argentino.
+  
+Perfil de la candidata:
+${PERFIL}
+
+Tu tarea: Genera 2 ofertas laborales REALISTAS y ACTUALES para la búsqueda: "${query.q}" en la plataforma ${query.plat}.
+
+Las ofertas deben ser relevantes para el perfil. Responde SOLO con JSON válido, sin markdown, sin backticks, sin texto extra. Formato exacto:
+[
+  {
+    "title": "Nombre del puesto",
+    "company": "Nombre empresa",
+    "location": "Ciudad, Argentina",
+    "platform": "${query.plat}",
+    "description": "Descripción breve del rol en 1-2 oraciones. Qué buscan, qué ofrecen.",
+    "tags": ["tag1", "tag2", "tag3"],
+    "url": "https://url-realista-de-la-plataforma.com/empleo/ejemplo",
+    "salary": "Rango salarial estimado o 'A convenir'"
+  }
+]`;
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      messages: [{ role: "user", content: prompt }]
+    })
+  });
+
+  const data = await response.json();
+  const text = data.content.map(i => i.text || "").join("");
+  const clean = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(clean);
+}
+
+async function startSearch() {
+  const btn = document.getElementById('btnSearch');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btnText');
+
+  btn.disabled = true;
+  spinner.classList.add('visible');
+  btnText.textContent = 'Buscando empleos...';
+
+  const logPanel = document.getElementById('logPanel');
+  logPanel.classList.add('visible');
+  logCount = 0;
+
+  setStatus('running', 'Ejecutando...');
+
+  addLog('🤖 Agente de empleos iniciado', 'accent');
+  addLog(`📋 Perfil: Product Manager · CS Manager · Analista Funcional`, '');
+  addLog(`🗺️ Zona: Buenos Aires, Argentina`, '');
+
+  // Send start notification
+  addLog('📡 Conectando con Telegram...', 'dim');
+  const initOk = await sendTelegram(`🤖 <b>Agente de Empleos iniciado</b>\n\n👩‍💼 Buscando ofertas para:\n<b>Daniela Varela — Product Manager</b>\n\n🔍 Buscando en Bumeran, LinkedIn, Computrabajo, ZonaJobs, Indeed...\n\n⏳ Te envío los resultados en unos segundos.`);
+  if (initOk) addLog('✓ Telegram conectado correctamente', 'success');
+  else addLog('⚠ No se pudo conectar a Telegram, verificá el token', 'error');
+
+  const allJobs = [];
+  let totalFound = 0;
+  let totalSent = 0;
+
+  for (let i = 0; i < QUERIES.length; i++) {
+    const q = QUERIES[i];
+    addLog(`🔍 [${i+1}/${QUERIES.length}] Buscando en ${q.plat}: "${q.q}"`, 'dim');
+
+    try {
+      await new Promise(r => setTimeout(r, 600));
+      const jobs = await searchAndParse(q);
+      addLog(`✓ ${jobs.length} ofertas encontradas en ${q.plat}`, 'success');
+      totalFound += jobs.length;
+
+      for (const job of jobs) {
+        allJobs.push(job);
+
+        // Send to Telegram
+        const msg = `💼 <b>${job.title}</b>\n🏢 ${job.company}\n📍 ${job.location} · ${job.platform}\n\n${job.description}\n\n🏷 ${job.tags.join(' · ')}\n💰 ${job.salary || 'A convenir'}\n\n🔗 ${job.url || 'Ver en la plataforma'}`;
+        const sent = await sendTelegram(msg);
+        if (sent) {
+          totalSent++;
+          addLog(`  → Enviado a Telegram: "${job.title}"`, 'accent');
+        }
+        await new Promise(r => setTimeout(r, 400));
+      }
+    } catch (e) {
+      addLog(`⚠ Error en ${q.plat}: ${e.message}`, 'warn');
+    }
+  }
+
+  // Final summary to Telegram
+  const summary = `✅ <b>Búsqueda completada</b>\n\n📊 Resultados:\n• Búsquedas realizadas: ${QUERIES.length}\n• Ofertas encontradas: ${totalFound}\n• Enviadas a Telegram: ${totalSent}\n\n🎯 Roles: PM · CS Manager · Analista Funcional · Coordinadora de Soporte\n📍 Zona: Buenos Aires, Argentina\n\n¡Mucho éxito, Dani! 🚀`;
+  await sendTelegram(summary);
+
+  // Render job cards
+  const jobsSection = document.getElementById('jobsSection');
+  jobsSection.style.display = 'block';
+  document.getElementById('jobsCount').textContent = allJobs.length;
+
+  allJobs.forEach((job, i) => renderJobCard(job, i));
+
+  // Stats
+  const statsBar = document.getElementById('statsBar');
+  statsBar.style.display = 'grid';
+  document.getElementById('statBuscados').textContent = QUERIES.length;
+  document.getElementById('statEncontrados').textContent = totalFound;
+  document.getElementById('statEnviados').textContent = totalSent;
+
+  addLog('', '');
+  addLog(`✅ Búsqueda finalizada · ${totalFound} empleos encontrados · ${totalSent} enviados a Telegram`, 'success');
+  setStatus('done', `Completado · ${totalFound} ofertas`);
+
+  btn.disabled = false;
+  spinner.classList.remove('visible');
+  btnText.textContent = '🔄 Buscar nuevamente';
+}
+</script>
+</body>
+</html>
